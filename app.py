@@ -421,3 +421,28 @@ class ChatBot:
                 query.edit_message_text(
                     text=f"Edit your gender or your partner's gender\nyou: {my_gender}\npartner: {partner_gender}",
                     reply_markup=reply_markup)
+
+    def sharelink(self, update, context):
+        user_id, name, username = self.common_args(update, context)
+
+        # chat type (group or private)
+        chat_type = update.message.chat.type
+
+        if chat_type == "private":
+            try:
+                if user_id not in self.chat_pair:
+                    # Typing Action
+                    context.bot.send_chat_action(chat_id=user_id, action=ChatAction.TYPING, timeout=1)
+                    context.bot.send_message(chat_id=user_id, text=invalid_destroy())
+                else:
+                    partner_id = self.chat_pair.get(user_id)
+
+                    if username is not None:
+                        context.bot.send_message(chat_id=user_id, text=f"Profile shared")
+                        context.bot.send_message(chat_id=partner_id, text=f"@{username}")
+                    else:
+                        context.bot.send_message(chat_id=user_id, text=f"Error: Username not found")
+
+            # if user stop the bot
+            except telegram.error.Unauthorized:
+                self.end_conversation(update, context)
