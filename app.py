@@ -196,3 +196,38 @@ class ChatBot:
                 # if user stop the bot
                 except telegram.error.Unauthorized:
                     pass
+
+    def end_conversation(self, update, context):
+        user_id, name, username = self.common_args(update, context)
+
+        # chat type (group or private)
+        chat_type = update.message.chat.type
+
+        if chat_type == "private":
+            try:
+                # getting user info
+                data = self.record.search(user_id)
+                my_gender = data.get("gender")
+
+                if user_id not in self.chat_pair:
+                    # remove instance from list
+                    if my_gender == "🤴🏻 Boy" and user_id in self.boys:
+                        self.boys.remove(user_id)
+                    elif my_gender == "👸🏻 Girl" and user_id in self.girls:
+                        self.girls.remove(user_id)
+
+                    # user reply
+                    context.bot.send_message(chat_id=user_id, text=invalid_destroy())
+                else:
+                    partner_id = self.chat_pair.get(user_id)
+
+                    # update chat pair
+                    del self.chat_pair[user_id]
+                    del self.chat_pair[partner_id]
+
+                    context.bot.send_message(chat_id=user_id, text=destroy(who="You"))
+                    context.bot.send_message(chat_id=partner_id, text=destroy(who="Your"))
+
+            # if user stop the bot
+            except telegram.error.Unauthorized:
+                pass
