@@ -73,3 +73,25 @@ class ChatBot:
             # if user stop the bot
             except telegram.error.Unauthorized:
                 pass
+
+    def settings(self, update, context):
+        user_id, name, username = self.common_args(update, context)
+
+        # chat type (group or private)
+        chat_type = update.message.chat.type
+
+        if chat_type == "private":
+            try:
+                # Typing Action
+                context.bot.send_chat_action(chat_id=user_id, action=ChatAction.TYPING, timeout=1)
+
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton(text="🤴🏻 Gender 👸🏻", callback_data='SetGender')]
+                ])
+
+                # User info
+                update.message.reply_text(text="🛠Settings", reply_markup=reply_markup)
+
+            # if user stop the bot
+            except telegram.error.Unauthorized:
+                pass
