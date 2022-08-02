@@ -466,3 +466,10 @@ class ChatBot:
 
         updater.start_polling()
         updater.idle()
+
+
+if __name__ == '__main__':
+    bot_name = "Bot"
+    bot_key = "SECRET KEY"
+
+    ChatBot(bot_name, bot_key)
