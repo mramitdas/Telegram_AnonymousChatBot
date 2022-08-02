@@ -95,3 +95,25 @@ class ChatBot:
             # if user stop the bot
             except telegram.error.Unauthorized:
                 pass
+
+    def partner_selection(self, context, gender_list, opp_gender_list, user_id, gender1, gender2):
+
+        # precaution for same gender
+        if gender1 == gender2:
+            if gender_list[0] != user_id:
+                partner = gender_list[0]
+            else:
+                partner = gender_list[1]
+        else:
+            partner = opp_gender_list[0]
+
+        # updating user list
+        gender_list.remove(user_id)
+        opp_gender_list.remove(partner)
+
+        # updating chat pairs
+        self.chat_pair.update({user_id: partner})
+        self.chat_pair.update({partner: user_id})
+
+        context.bot.send_message(chat_id=user_id, text=partner_match(gender1))
+        context.bot.send_message(chat_id=partner, text=partner_match(gender2))
