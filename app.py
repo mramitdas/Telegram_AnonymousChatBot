@@ -255,3 +255,65 @@ class ChatBot:
             # if user stop the bot
             except telegram.error.Unauthorized:
                 self.end_conversation(update, context)
+
+    def media_handler(self, update, context):
+        # print(update)
+        user_id, name, username = self.common_args(update, context)
+
+        # chat type (group or private)
+        chat_type = update.message.chat.type
+
+        if chat_type == "private":
+            try:
+                if user_id not in self.chat_pair:
+                    # Typing Action
+                    context.bot.send_chat_action(chat_id=user_id, action=ChatAction.TYPING, timeout=1)
+                    context.bot.send_message(chat_id=user_id, text=invalid_destroy())
+                else:
+                    partner_id = self.chat_pair.get(user_id)
+                    caption = update.message.caption
+
+                    if update.message.sticker:
+                        # sticker send action
+                        context.bot.send_chat_action(chat_id=partner_id, action=ChatAction.CHOOSE_STICKER, timeout=1)
+                        context.bot.send_sticker(chat_id=partner_id, sticker=update.message.sticker)
+
+                    elif update.message.photo:
+                        # image send action
+                        context.bot.send_chat_action(chat_id=partner_id, action=ChatAction.UPLOAD_PHOTO, timeout=1)
+                        if caption:
+                            context.bot.send_photo(chat_id=partner_id, photo=update.message.photo[-1], caption=caption)
+                        else:
+                            context.bot.send_photo(chat_id=partner_id, photo=update.message.photo[-1])
+
+                    elif update.message.video:
+                        # video send action
+                        context.bot.send_chat_action(chat_id=partner_id, action=telegram.ChatAction.UPLOAD_VIDEO)
+                        if caption:
+                            context.bot.send_video(chat_id=partner_id, video=update.message.video, caption=caption)
+                        else:
+                            context.bot.send_video(chat_id=partner_id, video=update.message.video)
+
+                    elif update.message.video_note:
+                        # video note send action
+                        context.bot.send_chat_action(chat_id=partner_id, action=ChatAction.RECORD_VIDEO_NOTE, timeout=1)
+                        context.bot.send_video_note(chat_id=partner_id, video_note=update.message.video_note)
+
+                    elif update.message.voice:
+                        # voice send action
+                        context.bot.send_chat_action(chat_id=partner_id, action=ChatAction.RECORD_VOICE, timeout=1)
+                        context.bot.send_voice(chat_id=partner_id, voice=update.message.voice)
+
+                    elif update.message.audio:
+                        # audio send action
+                        context.bot.send_chat_action(chat_id=partner_id, action=ChatAction.UPLOAD_AUDIO, timeout=1)
+                        context.bot.send_audio(chat_id=partner_id, audio=update.message.audio)
+
+                    elif update.message.document:
+                        # document send action
+                        context.bot.send_chat_action(chat_id=partner_id, action=ChatAction.UPLOAD_DOCUMENT, timeout=1)
+                        context.bot.send_document(chat_id=partner_id, document=update.message.document)
+
+            # if user stop the bot
+            except telegram.error.Unauthorized:
+                self.end_conversation(update, context)
