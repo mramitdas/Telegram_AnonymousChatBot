@@ -317,3 +317,107 @@ class ChatBot:
             # if user stop the bot
             except telegram.error.Unauthorized:
                 self.end_conversation(update, context)
+
+    def button_handler(self, update, context):
+        """Parses the CallbackQuery and updates the message text."""
+        query = update.callback_query
+        query.answer()
+
+        # chat info
+        user_id = update.callback_query.message.chat.id
+        chat_type = update.callback_query.message.chat.type
+
+        if chat_type == "private":
+            if "SetGender" in query.data:
+
+                # removing user previous state if present
+                if user_id in self.boys:
+                    self.boys.remove(user_id)
+                elif user_id in self.girls:
+                    self.girls.remove(user_id)
+
+                # normal flow
+                data = self.record.search(user_id)
+
+                my_gender = data.get("gender")
+                partner_gender = data.get("partner_gender")
+
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton(text="👤 Your Gender", callback_data=f'SetMine')],
+                    [InlineKeyboardButton(text="🗣️ Partner's Gender", callback_data=f'SetPartner')],
+                ])
+
+                query.edit_message_text(
+                    text=f"Edit your gender or your partner's gender\nyou: {my_gender}\npartner: {partner_gender}",
+                    reply_markup=reply_markup)
+
+            elif "SetMine" in query.data:
+                data = self.record.search(user_id)
+
+                my_gender = data.get("gender")
+
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton(text="🤴🏻 Boy", callback_data=f'SetBoy_M')],
+                    [InlineKeyboardButton(text="👸🏻 Girl", callback_data=f'SetGirl_M')],
+                ])
+
+                query.edit_message_text(text=f"Select your gender\nCurrent: {my_gender}", reply_markup=reply_markup)
+
+            elif "SetPartner" in query.data:
+                data = self.record.search(user_id)
+
+                partner_gender = data.get("partner_gender")
+
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton(text="🤴🏻 Boy", callback_data=f'SetBoy_P')],
+                    [InlineKeyboardButton(text="👸🏻 Girl", callback_data=f'SetGirl_P')],
+                ])
+
+                query.edit_message_text(text=f"Select partner gender\nCurrent: {partner_gender}",
+                                        reply_markup=reply_markup)
+
+            elif "SetBoy" in query.data:
+                # checking request for user or partner
+                if str(query.data).split("_")[1] == "M":
+                    new_data = {"gender": "🤴🏻 Boy"}
+                else:
+                    new_data = {"partner_gender": "🤴🏻 Boy"}
+
+                # update user info
+                self.record.update(user_id, new_data)
+
+                data = self.record.search(user_id)
+                my_gender = data.get("gender")
+                partner_gender = data.get("partner_gender")
+
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton(text="👤 Your Gender", callback_data=f'SetMine')],
+                    [InlineKeyboardButton(text="🗣️ Partner's Gender", callback_data=f'SetPartner')],
+                ])
+
+                query.edit_message_text(
+                    text=f"Edit your gender or your partner's gender\nyou: {my_gender}\npartner: {partner_gender}",
+                    reply_markup=reply_markup)
+
+            elif "SetGirl" in query.data:
+                # checking request for user or partner
+                if str(query.data).split("_")[1] == "M":
+                    new_data = {"gender": "👸🏻 Girl"}
+                else:
+                    new_data = {"partner_gender": "👸🏻 Girl"}
+
+                # update user info
+                self.record.update(user_id, new_data)
+
+                data = self.record.search(user_id)
+                my_gender = data.get("gender")
+                partner_gender = data.get("partner_gender")
+
+                reply_markup = InlineKeyboardMarkup([
+                    [InlineKeyboardButton(text="👤 Your Gender", callback_data=f'SetMine')],
+                    [InlineKeyboardButton(text="🗣️ Partner's Gender", callback_data=f'SetPartner')],
+                ])
+
+                query.edit_message_text(
+                    text=f"Edit your gender or your partner's gender\nyou: {my_gender}\npartner: {partner_gender}",
+                    reply_markup=reply_markup)
