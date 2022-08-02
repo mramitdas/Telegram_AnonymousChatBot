@@ -446,3 +446,23 @@ class ChatBot:
             # if user stop the bot
             except telegram.error.Unauthorized:
                 self.end_conversation(update, context)
+
+    def command_handler(self):
+        updater = Updater(self.bot_key, use_context=True)
+
+        dp = updater.dispatcher
+
+        dp.add_handler(CommandHandler("start", self.start, run_async=True))
+        dp.add_handler(CommandHandler("help", self.help, run_async=True))
+        dp.add_handler(CommandHandler("settings", self.settings, run_async=True))
+
+        dp.add_handler(CommandHandler("next", self.find_partner, run_async=True))
+        dp.add_handler(CommandHandler("stop", self.end_conversation, run_async=True))
+
+        dp.add_handler(CommandHandler("sharelink", self.sharelink, run_async=True))
+
+        dp.add_handler(MessageHandler(Filters.all, self.media_handler, run_async=True))
+        dp.add_handler(CallbackQueryHandler(self.button_handler, run_async=True))
+
+        updater.start_polling()
+        updater.idle()
