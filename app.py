@@ -231,3 +231,27 @@ class ChatBot:
             # if user stop the bot
             except telegram.error.Unauthorized:
                 pass
+
+    def message_handler(self, update, context):
+        user_id, name, username = self.common_args(update, context)
+
+        # chat type (group or private)
+        chat_type = update.message.chat.type
+
+        if chat_type == "private":
+            try:
+                if user_id not in self.chat_pair:
+                    # Typing Action
+                    context.bot.send_chat_action(chat_id=user_id, action=ChatAction.TYPING, timeout=1)
+                    context.bot.send_message(chat_id=user_id, text=invalid_destroy())
+                else:
+                    partner_id = self.chat_pair.get(user_id)
+                    msg = update.message.text
+
+                    # Typing Action
+                    context.bot.send_chat_action(chat_id=partner_id, action=ChatAction.TYPING, timeout=1)
+                    context.bot.send_message(chat_id=partner_id, text=msg)
+
+            # if user stop the bot
+            except telegram.error.Unauthorized:
+                self.end_conversation(update, context)
